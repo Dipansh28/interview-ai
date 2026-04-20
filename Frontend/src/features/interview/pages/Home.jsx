@@ -8,12 +8,31 @@ const Home = () => {
     const { loading, generateReport,reports } = useInterview()
     const [ jobDescription, setJobDescription ] = useState("")
     const [ selfDescription, setSelfDescription ] = useState("")
+    const [ uploadedFileName, setUploadedFileName ] = useState("")
     const resumeInputRef = useRef()
 
     const navigate = useNavigate()
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            setUploadedFileName(file.name)
+        }
+    }
+
     const handleGenerateReport = async () => {
-        const resumeFile = resumeInputRef.current.files[ 0 ]
+        // Validate that either resume or self-description is provided
+        if (!jobDescription.trim()) {
+            alert("Job Description is required!")
+            return
+        }
+        
+        const resumeFile = resumeInputRef.current.files[0]
+        if (!resumeFile && !selfDescription.trim()) {
+            alert("Please provide either a Resume or Self Description!")
+            return
+        }
+
         const data = await generateReport({ jobDescription, selfDescription, resumeFile })
         navigate(`/interview/${data._id}`)
     }
@@ -21,7 +40,11 @@ const Home = () => {
     if (loading) {
         return (
             <main className='loading-screen'>
+                <div className='loader'>
+                    <div className='spinner'></div>
+                </div>
                 <h1>Loading your interview plan...</h1>
+                <p className='loading-subtitle'>AI is analyzing your profile & job requirements</p>
             </main>
         )
     }
@@ -75,14 +98,27 @@ const Home = () => {
                                 Upload Resume
                                 <span className='badge badge--best'>Best Results</span>
                             </label>
-                            <label className='dropzone' htmlFor='resume'>
-                                <span className='dropzone__icon'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
-                                </span>
-                                <p className='dropzone__title'>Click to upload or drag &amp; drop</p>
-                                <p className='dropzone__subtitle'>PDF or DOCX (Max 5MB)</p>
-                                <input ref={resumeInputRef} hidden type='file' id='resume' name='resume' accept='.pdf,.docx' />
-                            </label>
+                            {uploadedFileName ? (
+                                <div className='upload-success'>
+                                    <span className='upload-success__icon'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                    </span>
+                                    <div className='upload-success__content'>
+                                        <p className='upload-success__filename'>{uploadedFileName}</p>
+                                        <p className='upload-success__text'>File uploaded successfully</p>
+                                    </div>
+                                    <button type='button' className='upload-success__change' onClick={() => {resumeInputRef.current?.click()}}>Change</button>
+                                </div>
+                            ) : (
+                                <label className='dropzone' htmlFor='resume'>
+                                    <span className='dropzone__icon'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
+                                    </span>
+                                    <p className='dropzone__title'>Click to upload or drag &amp; drop</p>
+                                    <p className='dropzone__subtitle'>PDF or DOCX (Max 5MB)</p>
+                                </label>
+                            )}
+                            <input ref={resumeInputRef} hidden type='file' id='resume' name='resume' accept='.pdf,.docx' onChange={handleFileChange} />
                         </div>
 
                         {/* OR Divider */}

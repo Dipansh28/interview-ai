@@ -73,7 +73,11 @@ const Interview = () => {
     if (loading || !report) {
         return (
             <main className='loading-screen'>
+                <div className='loader'>
+                    <div className='spinner'></div>
+                </div>
                 <h1>Loading your interview plan...</h1>
+                <p className='loading-subtitle'>AI is analyzing your profile & job requirements</p>
             </main>
         )
     }

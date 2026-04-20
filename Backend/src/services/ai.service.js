@@ -35,11 +35,37 @@ const interviewReportSchema = z.object({
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
 
 
-    const prompt = `Generate an interview report for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}
-`
+    // const prompt = `Generate an interview report for a candidate with the following details:
+    //                     Resume: ${resume}
+    //                     Self Description: ${selfDescription}
+    //                     Job Description: ${jobDescription}
+    //                 `
+
+
+    const prompt = `
+            Generate a detailed interview preparation report for a candidate.
+            
+            CRITICAL: You MUST return proper JSON objects in arrays, NOT flat arrays with string keys.
+            
+            WRONG format: ["question", "text", "answer", "text"]
+            CORRECT format: [{"question": "text", "intention": "text", "answer": "text"}]
+            
+            STRICT INSTRUCTIONS:
+            - technicalQuestions: array of OBJECTS each with "question", "intention", and "answer" string fields
+            - behavioralQuestions: array of OBJECTS each with "question", "intention", and "answer" string fields
+            - skillGaps: array of OBJECTS each with "skill" string and "severity" enum ("low"/"medium"/"high")
+            - preparationPlan: array of OBJECTS each with "day" number, "focus" string, and "tasks" array of strings
+            - Generate at least 5 technicalQuestions and 3 behavioralQuestions
+            - Generate at least 4 skillGaps
+            - Generate exactly 7 days in preparationPlan
+            - Calculate matchScore as a number between 0 and 100
+
+            Resume: ${resume}
+            Self Description: ${selfDescription}
+            Job Description: ${jobDescription}
+        `
+
+
 
     const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
