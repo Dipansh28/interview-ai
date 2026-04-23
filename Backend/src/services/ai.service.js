@@ -4,8 +4,34 @@ const { zodToJsonSchema } = require("zod-to-json-schema")
 const puppeteer = require("puppeteer")
 
 const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY
+    apiKey: process.env.GOOGLE_GENAI_API_KEY?.trim()
 })
+
+function toFriendlyAiError(error) {
+    const rawMessage = error?.message || "Unknown AI service error"
+
+    if (rawMessage.includes("reported as leaked")) {
+        const leakedKeyError = new Error("Google AI API key is blocked because it was reported as leaked. Replace GOOGLE_GENAI_API_KEY in Backend/.env with a new valid key.")
+        leakedKeyError.statusCode = 503
+        return leakedKeyError
+    }
+
+    if (rawMessage.includes("PERMISSION_DENIED") || error?.status === 403) {
+        const permissionError = new Error("Google AI API key is invalid or does not have permission to use Gemini models.")
+        permissionError.statusCode = 503
+        return permissionError
+    }
+
+    if (rawMessage.includes("API key not valid")) {
+        const invalidKeyError = new Error("Google AI API key is not valid. Update GOOGLE_GENAI_API_KEY in Backend/.env.")
+        invalidKeyError.statusCode = 503
+        return invalidKeyError
+    }
+
+    const fallbackError = new Error("AI service request failed. Please try again later.")
+    fallbackError.statusCode = 502
+    return fallbackError
+}
 
 
 const interviewReportSchema = z.object({
@@ -67,16 +93,20 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
 
 
 
-    const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: zodToJsonSchema(interviewReportSchema),
-        }
-    })
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: zodToJsonSchema(interviewReportSchema),
+            }
+        })
 
-    return JSON.parse(response.text)
+        return JSON.parse(response.text)
+    } catch (error) {
+        throw toFriendlyAiError(error)
+    }
 
 
 }
@@ -121,21 +151,22 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
                         The resume should not be so lengthy, it should ideally be 1-2 pages long when converted to PDF. Focus on quality rather than quantity and make sure to include all the relevant information that can increase the candidate's chances of getting an interview call for the given job description.
                     `
 
-    const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: zodToJsonSchema(resumePdfSchema),
-        }
-    })
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: zodToJsonSchema(resumePdfSchema),
+            }
+        })
 
-
-    const jsonContent = JSON.parse(response.text)
-
-    const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
-
-    return pdfBuffer
+        const jsonContent = JSON.parse(response.text)
+        const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
+        return pdfBuffer
+    } catch (error) {
+        throw toFriendlyAiError(error)
+    }
 
 }
 

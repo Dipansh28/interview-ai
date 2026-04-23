@@ -4,7 +4,7 @@ import axios from "axios"
 const getApiUrl = () => {
     // If VITE_API_URL is set (from .env file or Vercel environment variables)
     if (import.meta.env.VITE_API_URL) {
-        return import.meta.env.VITE_API_URL
+        return import.meta.env.VITE_API_URL.replace(/\/+$/, "")
     }
     
     // If we're in production (Vercel deployment)
@@ -12,16 +12,25 @@ const getApiUrl = () => {
         return "https://interview-ai-backend-v0wx.onrender.com"
     }
     
-    // Default to localhost for development
-    return "http://localhost:3000"
+    // Default to the same host machine on port 3000 for development
+    const host = window.location.hostname || "localhost"
+    return `http://${host}:3000`
 }
 
 const API_URL = getApiUrl()
 
 const api = axios.create({
     baseURL: API_URL,
-    withCredentials: true
+    withCredentials: true,
+    timeout: 15000
 })
+
+function getApiErrorMessage(err, fallbackMessage) {
+    if (err.code === "ERR_NETWORK") {
+        return "Cannot reach backend server. Make sure Backend is running on port 3000."
+    }
+    return err.response?.data?.message || err.message || fallbackMessage
+}
 
 export async function register({ username, email, password }) {
     try {
@@ -30,7 +39,7 @@ export async function register({ username, email, password }) {
         })
         return response.data
     } catch (err) {
-        const errorMessage = err.response?.data?.message || err.message || "Registration failed"
+        const errorMessage = getApiErrorMessage(err, "Registration failed")
         console.error("Register Error:", errorMessage)
         throw new Error(errorMessage)
     }
@@ -43,7 +52,7 @@ export async function login({ email, password }) {
         })
         return response.data
     } catch (err) {
-        const errorMessage = err.response?.data?.message || err.message || "Login failed"
+        const errorMessage = getApiErrorMessage(err, "Login failed")
         console.error("Login Error:", errorMessage)
         throw new Error(errorMessage)
     }
@@ -54,7 +63,7 @@ export async function logout() {
         const response = await api.get("/api/auth/logout")
         return response.data
     } catch (err) {
-        const errorMessage = err.response?.data?.message || err.message || "Logout failed"
+        const errorMessage = getApiErrorMessage(err, "Logout failed")
         console.error("Logout Error:", errorMessage)
         throw new Error(errorMessage)
     }
@@ -65,7 +74,7 @@ export async function getMe() {
         const response = await api.get("/api/auth/get-me")
         return response.data
     } catch (err) {
-        const errorMessage = err.response?.data?.message || err.message || "Failed to fetch user"
+        const errorMessage = getApiErrorMessage(err, "Failed to fetch user")
         console.error("GetMe Error:", errorMessage)
         throw new Error(errorMessage)
     }

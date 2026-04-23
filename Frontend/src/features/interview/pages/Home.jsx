@@ -9,6 +9,7 @@ const Home = () => {
     const [ jobDescription, setJobDescription ] = useState("")
     const [ selfDescription, setSelfDescription ] = useState("")
     const [ uploadedFileName, setUploadedFileName ] = useState("")
+    const [ submitError, setSubmitError ] = useState("")
     const resumeInputRef = useRef()
 
     const navigate = useNavigate()
@@ -23,18 +24,23 @@ const Home = () => {
     const handleGenerateReport = async () => {
         // Validate that either resume or self-description is provided
         if (!jobDescription.trim()) {
-            alert("Job Description is required!")
+            setSubmitError("Job Description is required.")
             return
         }
         
         const resumeFile = resumeInputRef.current.files[0]
         if (!resumeFile && !selfDescription.trim()) {
-            alert("Please provide either a Resume or Self Description!")
+            setSubmitError("Please provide either a Resume or Self Description.")
             return
         }
 
-        const data = await generateReport({ jobDescription, selfDescription, resumeFile })
-        navigate(`/interview/${data._id}`)
+        try {
+            setSubmitError("")
+            const data = await generateReport({ jobDescription, selfDescription, resumeFile })
+            navigate(`/interview/${data._id}`)
+        } catch (error) {
+            setSubmitError(error?.message || "Failed to generate interview report. Please try again.")
+        }
     }
 
     if (loading) {
@@ -72,7 +78,10 @@ const Home = () => {
                             <span className='badge badge--required'>Required</span>
                         </div>
                         <textarea
-                            onChange={(e) => { setJobDescription(e.target.value) }}
+                            onChange={(e) => {
+                                setJobDescription(e.target.value)
+                                if (submitError) setSubmitError("")
+                            }}
                             className='panel__textarea'
                             placeholder={`Paste the full job description here...\ne.g. 'Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design...'`}
                             maxLength={5000}
@@ -115,10 +124,21 @@ const Home = () => {
                                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
                                     </span>
                                     <p className='dropzone__title'>Click to upload or drag &amp; drop</p>
-                                    <p className='dropzone__subtitle'>PDF or DOCX (Max 5MB)</p>
+                                    <p className='dropzone__subtitle'>PDF only (Max 3MB)</p>
                                 </label>
                             )}
-                            <input ref={resumeInputRef} hidden type='file' id='resume' name='resume' accept='.pdf,.docx' onChange={handleFileChange} />
+                            <input
+                                ref={resumeInputRef}
+                                hidden
+                                type='file'
+                                id='resume'
+                                name='resume'
+                                accept='.pdf'
+                                onChange={(e) => {
+                                    handleFileChange(e)
+                                    if (submitError) setSubmitError("")
+                                }}
+                            />
                         </div>
 
                         {/* OR Divider */}
@@ -128,7 +148,10 @@ const Home = () => {
                         <div className='self-description'>
                             <label className='section-label' htmlFor='selfDescription'>Quick Self-Description</label>
                             <textarea
-                                onChange={(e) => { setSelfDescription(e.target.value) }}
+                                onChange={(e) => {
+                                    setSelfDescription(e.target.value)
+                                    if (submitError) setSubmitError("")
+                                }}
                                 id='selfDescription'
                                 name='selfDescription'
                                 className='panel__textarea panel__textarea--short'
@@ -156,6 +179,11 @@ const Home = () => {
                         Generate My Interview Strategy
                     </button>
                 </div>
+                {submitError && (
+                    <div className='interview-card__footer' style={{ paddingTop: 0 }}>
+                        <span style={{ color: "#ff6b6b" }}>{submitError}</span>
+                    </div>
+                )}
             </div>
 
             {/* Recent Reports List */}

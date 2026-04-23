@@ -7,21 +7,26 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 
-const allowedOrigins = [
-    "http://localhost:5173",
+const allowedOrigins = new Set([
     "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:5174",
     "https://interview-ai-pink-ten.vercel.app"
-]
+])
+
+const isLocalDevOrigin = (origin) => /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin)) {
             callback(null, true)
         } else {
-            callback(new Error("Not allowed by CORS"))
+            callback(null, false)
         }
     },
-    credentials: true
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }))
 
 /* require all the routes here */
@@ -30,6 +35,10 @@ const interviewRouter = require("./routes/interview.routes")
 
 
 /* using all the routes here */
+app.get("/api/health", (req, res) => {
+    res.status(200).json({ status: "ok" })
+})
+
 app.use("/api/auth", authRouter)
 app.use("/api/interview", interviewRouter)
 
