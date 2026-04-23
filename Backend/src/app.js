@@ -15,10 +15,12 @@ const allowedOrigins = new Set([
 ])
 
 const isLocalDevOrigin = (origin) => /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
+const isAllowedVercelInterviewOrigin = (origin) =>
+    /^https:\/\/interview-[a-z0-9-]+-dipanshs-projects-db62e5e1\.vercel\.app$/.test(origin)
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin)) {
+        if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin) || isAllowedVercelInterviewOrigin(origin)) {
             callback(null, true)
         } else {
             callback(null, false)

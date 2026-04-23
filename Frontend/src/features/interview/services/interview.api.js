@@ -27,7 +27,7 @@ const api = axios.create({
 
 const getApiErrorMessage = (err, fallbackMessage) => {
     if (err.code === "ERR_NETWORK") {
-        return "Cannot reach backend server. Make sure Backend is running on port 3000."
+        return "Cannot reach backend server. Verify backend URL and CORS settings for this deployed frontend."
     }
     return err.response?.data?.message || err.message || fallbackMessage
 }

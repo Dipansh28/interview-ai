@@ -28,11 +28,12 @@
 
 ### 4. **Backend CORS Configuration** ✅
 **Problem**: CORS only allowed localhost origins
-- **Solution**: Added Vercel frontend domain
+- **Solution**: Added Vercel frontend domain and support for Vercel preview deployment URLs
 - Allowed origins:
   - `http://localhost:5173` (local dev)
   - `http://localhost:3000` (local dev)
   - `https://interview-ohq75hm41-dipanshs-projects-db62e5e1.vercel.app` (production)
+  - `https://interview-<deployment>-dipanshs-projects-db62e5e1.vercel.app` (preview deployments)
 
 ### 5. **Backend Port Configuration** ✅
 **Problem**: Hardcoded port 3000, Render uses dynamic PORT
