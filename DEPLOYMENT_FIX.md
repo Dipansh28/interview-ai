@@ -32,7 +32,7 @@
 - Allowed origins:
   - `http://localhost:5173` (local dev)
   - `http://localhost:3000` (local dev)
-  - `https://interview-ai-pink-ten.vercel.app` (production)
+  - `https://interview-ohq75hm41-dipanshs-projects-db62e5e1.vercel.app` (production)
 
 ### 5. **Backend Port Configuration** ✅
 **Problem**: Hardcoded port 3000, Render uses dynamic PORT
@@ -88,7 +88,7 @@ NODE_ENV=production
 ## Testing Checklist
 
 - [ ] Clear browser cache
-- [ ] Visit https://interview-ai-pink-ten.vercel.app
+- [ ] Visit https://interview-ohq75hm41-dipanshs-projects-db62e5e1.vercel.app
 - [ ] See login page (not redirected)
 - [ ] Try registering with invalid data → see error message
 - [ ] Try registering with valid data → should succeed and redirect to home
