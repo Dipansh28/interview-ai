@@ -1,6 +1,22 @@
 import axios from "axios"
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+// Determine API URL based on environment
+const getApiUrl = () => {
+    // If VITE_API_URL is set (from .env file or Vercel environment variables)
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL
+    }
+    
+    // If we're in production (Vercel deployment)
+    if (import.meta.env.PROD) {
+        return "https://interview-ai-backend-v0wx.onrender.com"
+    }
+    
+    // Default to localhost for development
+    return "http://localhost:3000"
+}
+
+const API_URL = getApiUrl()
 
 const api = axios.create({
     baseURL: API_URL,

@@ -1,4 +1,4 @@
-const pdfParse = require("pdf-parse")
+const pdf = require("pdf-parse")
 const { generateInterviewReport, generateResumePdf } = require("../services/ai.service")
 const interviewReportModel = require("../models/interviewReport.model")
 
@@ -14,7 +14,7 @@ async function generateInterViewReportController(req, res, next) {
         
         // Handle optional resume file
         if (req.file && req.file.buffer) {
-            const pdfData = await pdfParse(req.file.buffer)
+            const pdfData = await pdf(req.file.buffer)
             resumeContent = pdfData.text || ""
         }
 
