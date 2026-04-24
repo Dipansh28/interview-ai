@@ -11,16 +11,22 @@ const allowedOrigins = new Set([
     "http://localhost:3000",
     "http://localhost:5173",
     "http://localhost:5174",
+    "https://interview-ai-pink-ten.vercel.app",
     "https://interview-ohq75hm41-dipanshs-projects-db62e5e1.vercel.app"
 ])
 
 const isLocalDevOrigin = (origin) => /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
 const isAllowedVercelInterviewOrigin = (origin) =>
     /^https:\/\/interview-[a-z0-9-]+-dipanshs-projects-db62e5e1\.vercel\.app$/.test(origin)
+const envAllowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+const isEnvAllowedOrigin = (origin) => envAllowedOrigins.includes(origin)
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin) || isAllowedVercelInterviewOrigin(origin)) {
+        if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin) || isAllowedVercelInterviewOrigin(origin) || isEnvAllowedOrigin(origin)) {
             callback(null, true)
         } else {
             callback(null, false)
