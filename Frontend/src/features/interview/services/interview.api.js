@@ -2,14 +2,23 @@ import axios from "axios";
 
 // Determine API URL based on environment
 const getApiUrl = () => {
+    const defaultProdApiUrl = "https://interview-ai-backend-v0wx.onrender.com"
+
     // If VITE_API_URL is set (from .env file or Vercel environment variables)
     if (import.meta.env.VITE_API_URL) {
-        return import.meta.env.VITE_API_URL.replace(/\/+$/, "")
+        const configuredApiUrl = import.meta.env.VITE_API_URL.replace(/\/+$/, "")
+
+        // Guard against accidental localhost values in production deployments
+        if (import.meta.env.PROD && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(configuredApiUrl)) {
+            return defaultProdApiUrl
+        }
+
+        return configuredApiUrl
     }
     
     // If we're in production (Vercel deployment)
     if (import.meta.env.PROD) {
-        return "https://interview-ai-backend-v0wx.onrender.com"
+        return defaultProdApiUrl
     }
     
     // Default to the same host machine on port 3000 for development
