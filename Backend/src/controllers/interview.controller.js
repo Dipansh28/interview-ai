@@ -24,6 +24,9 @@ async function generateInterViewReportController(req, res, next) {
             try {
                 const pdfData = await pdf(req.file.buffer)
                 resumeContent = (pdfData.text || "").trim()
+                if (resumeContent.length > 15000) {
+                    resumeContent = `${resumeContent.slice(0, 15000)}\n\n[truncated]`
+                }
             } catch (pdfError) {
                 resumeWarning = "Uploaded PDF could not be parsed, continuing without resume content."
             }

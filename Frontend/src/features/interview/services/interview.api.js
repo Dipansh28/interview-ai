@@ -31,7 +31,7 @@ const API_URL = getApiUrl()
 const api = axios.create({
     baseURL: API_URL,
     withCredentials: true,
-    timeout: 20000,
+    timeout: 0,
 })
 
 const getApiErrorMessage = (err, fallbackMessage) => {
